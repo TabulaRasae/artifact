@@ -79,6 +79,9 @@ async function redBoboRoutine() {
       await RedBobo.moveTo(2, 2);
       await RedBobo.gather(100, 27);
 
+      await RedBobo.moveTo(2, 3, 5);
+      await RedBobo.craft("small_health_potion", 33, 5.5);
+
       console.log("✅ Yellow cycle complete");
     } catch (err) {
       console.error("Yellow cycle crashed:", err.message);
@@ -91,6 +94,8 @@ async function redRoutine() {
   await delay(5_000);
   await Red.moveTo(4, 1, 30);
   await Red.bankDepositAll();
+  await Red.depositGoldAll();
+  
   await Red.moveTo(0, -1, 30);
   const FIGHT_MS = 18_000;
   const REST_MS = 10_000;

@@ -1,8 +1,8 @@
 import "dotenv/config";
 
 const server = "https://api.artifactsmmo.com";
-const TOKEN  = process.env.TOKEN;
-const delay  = (ms) => new Promise((r) => setTimeout(r, ms));
+const TOKEN = process.env.TOKEN;
+const delay = (ms) => new Promise((r) => setTimeout(r, ms));
 
 export class CharacterClient {
   constructor(name) {
@@ -43,7 +43,7 @@ export class CharacterClient {
       const { data } = await invRes.json();
       const items = data.inventory.filter((it) => it.code && it.quantity > 0);
       if (!items.length) {
-        console.log(`${this.name} ✅ nothing to deposit`);
+        console.log(`${this.name} nothing to deposit`);
         return;
       }
 
@@ -62,6 +62,58 @@ export class CharacterClient {
         }s`
       );
       await delay(payload.length * 3 * 1000); // 3 s per item-type
+    }
+  }
+
+  async depositGoldAll(retryDelay = 3_000) {
+    while (true) {
+      const charRes = await fetch(`${server}/characters/${this.name}`, {
+        headers: this.headers,
+      });
+      if (charRes.status !== 200)
+        throw new Error(`Gold read failed → ${charRes.status}`);
+
+      const { data } = await charRes.json();
+      const gold = data.gold;
+
+      if (!gold) {
+        console.log(`${this.name} has no gold to deposit`);
+        return;
+      }
+
+      await delay(retryDelay);
+      const depRes = await this.#post("/action/bank/deposit/gold", {
+        quantity: gold,
+      });
+
+      switch (depRes.status) {
+        case 200:
+          console.log(`${this.name} deposited ${gold} gold`);
+          return;
+
+        case 460:
+          console.log(`${this.name}: server says insufficient gold (460)`);
+          return;
+
+        case 461:
+          console.log(
+            `${this.name} ⏳ bank transaction in progress (461) — wait ${
+              retryDelay / 1000
+            }s`
+          );
+          await delay(retryDelay);
+          break;
+
+        default: {
+          const txt = await depRes.text().catch(() => "");
+          console.log(
+            `${this.name} deposit-gold error ${depRes.status} ${txt} — retry ${
+              retryDelay / 1000
+            }s`
+          );
+          await delay(retryDelay);
+        }
+      }
     }
   }
 
@@ -95,7 +147,7 @@ export class CharacterClient {
         console.log(`${this.name} craft #${++done} ✔ — wait ${cd}s`);
         await delay(cd * 1000);
       } else if (res.status === 471 || res.status === 478) {
-        console.log(`${this.name} 🛑 no resources to craft`);
+        console.log(`${this.name} no resources to craft`);
         return "NO_RES";
       } else if (res.status === 499) {
         console.log(`${this.name} ⏳ craft cooldown — wait 5s`);
@@ -127,7 +179,7 @@ export class CharacterClient {
   async rest() {
     const res = await this.#post("/action/rest");
     const js = await res.json().catch(() => ({}));
-    console.log(`${this.name} 💤 rest:`, js);
+    console.log(`${this.name} is resting 💤`);
   }
 }
 
