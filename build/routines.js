@@ -89,11 +89,11 @@ async function redBoboRoutine() {
 
 async function redRoutine() {
   await delay(5_000);
-  await Red.moveTo(4, 1, 20);
+  await Red.moveTo(4, 1, 30);
   await Red.bankDepositAll();
-  await Red.moveTo(0, 1, 20);
-  const FIGHT_MS = 14_000;
-  const REST_MS = 5_000;
+  await Red.moveTo(0, -1, 30);
+  const FIGHT_MS = 18_000;
+  const REST_MS = 10_000;
 
   while (true) {
     const ok = await Red.fight();
