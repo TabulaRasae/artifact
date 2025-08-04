@@ -9,11 +9,11 @@ async function yellowRoutine() {
       await Yellow.moveTo(4, 1, 36);
       await Yellow.bankDepositAll();
 
-      await Yellow.moveTo(2, 0);
-      await Yellow.gather(100, 27);
+      await Yellow.moveTo(5, 2, 10);
+      await Yellow.gather(90, 35);
 
-      await Yellow.moveTo(1, 5, 36);
-      await Yellow.craft("copper_bar", 10, 5.5);
+      await Yellow.moveTo(1, 1, 20);
+      await Yellow.craft("cooked_shrimp", 90, 5.5);
 
       console.log("✅ Yellow cycle complete");
     } catch (err) {
